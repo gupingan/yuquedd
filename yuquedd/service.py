@@ -2,6 +2,7 @@ import json
 import re
 import typing as t
 import requests
+from html.parser import HTMLParser
 from urllib.parse import unquote
 from lxml import etree
 from . import const
@@ -73,6 +74,8 @@ class Node:
                 data += f'{"#" * int(tag[1])} {text}\n'
             elif tag == 'p':
                 data += f'{text}'
+            elif tag in ['em', 'i']:
+                data += f'*{text}*'
             elif tag == 'strong':
                 data += f'**{text}**'
             elif tag == 'span':
@@ -87,12 +90,46 @@ class Node:
                 data += '\t' * indent
                 data += f'- {text}\n'
             elif tag.startswith('ol_li_'):
-                index = tag.split('_')[-2]
-                indent = int(tag.split('_')[-1])
+                tags = tag.split('_')
+                index = tags[-2]
+                indent = int(tags[-1])
                 data += '\t' * indent
                 data += f'{index}. {text}\n'
+            elif tag == 'hr':
+                data += f'\n---{text}'
+            elif tag.startswith('table_'):
+                data += text
+
         return data
 
+
+class TableHTMLParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.in_td = False
+        self.in_th = False
+        self.current_row = []
+        self.rows = []
+        self.cell_data = ""
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ('td', 'th'):
+            self.in_td = tag == 'td'
+            self.in_th = tag == 'th'
+            self.cell_data = ""
+
+    def handle_endtag(self, tag):
+        if tag in ('td', 'th'):
+            self.current_row.append(self.cell_data.strip())
+            self.in_td = False
+            self.in_th = False
+        elif tag == 'tr':
+            self.rows.append(self.current_row)
+            self.current_row = []
+
+    def handle_data(self, data):
+        if self.in_td or self.in_th:
+            self.cell_data += data
 
 class Converter:
     def __init__(self, html_content: t.Union[str, bytes], encoding: t.Union[str] = 'utf-8'):
@@ -102,6 +139,9 @@ class Converter:
             self.html_content = html_content.decode(encoding)
         else:
             self.html_content = ''
+
+        # with open('./test.html', 'w', encoding=encoding) as fw:
+        #     fw.write(self.html_content)
 
         self.tree = etree.HTML(self.html_content)
         self.result = []
@@ -117,6 +157,7 @@ class Converter:
             self._create_node(node, elem)
 
         for node in self.nodes:
+            print(node)
             self.result.append(node.to_string())
 
     def _create_node(self, node: t.Union[Node], elem):
@@ -126,26 +167,59 @@ class Converter:
                 self._parse_list(node, elem)
             elif elem.tag == 'card':
                 name = elem.get('name', '')
-                encoded_value = elem.get('value', '')[5:]
-                decoded_value = unquote(encoded_value)
-                json_data = json.loads(decoded_value)
                 if name == 'codeblock':
+                    encoded_value = elem.get('value', '')[5:]
+                    decoded_value = unquote(encoded_value)
+                    json_data = json.loads(decoded_value)
                     code_block = json_data.get('code', '')
                     mode = json_data.get('mode', 'text')
                     node.tags.append(f'code_{mode}')
                     node.text.append(code_block)
-                elif name == 'image':
+                elif name in ['image', 'flowchart2']:
+                    encoded_value = elem.get('value', '')[5:]
+                    decoded_value = unquote(encoded_value)
+                    json_data = json.loads(decoded_value)
                     img_src = json_data.get('src', '')
                     node.tags.append('img')
                     node.text.append(img_src)
+                elif name == 'hr':
+                    node.tags.append('hr')
+                    node.text.append('\n')
+                elif name == 'table':
+                    encoded_value = elem.get('value', '')[5:]
+                    decoded_value = unquote(encoded_value)
+                    json_data = json.loads(decoded_value)
+                    rows = json_data.get('rows', '0')
+                    cols = json_data.get('cols', '0')
+                    html = json_data.get('html', '')
+
+                    # Parse the HTML table
+                    parser = TableHTMLParser()
+                    parser.feed(html)
+                    table_rows = parser.rows
+
+                    # Convert to Markdown table
+                    markdown_table = []
+                    for row in table_rows:
+                        markdown_table.append('| ' + ' | '.join(row) + ' |')
+                    if len(markdown_table) > 1:
+                        # Add header separator if there is a header
+                        header_separator = '| ' + ' | '.join(['---'] * len(table_rows[0])) + ' |'
+                        markdown_table.insert(1, header_separator)
+
+                    node.tags.append(f'table_{rows}_{cols}')
+                    node.text.append('\n'.join(markdown_table))
             else:
                 children = elem.getchildren()
                 if elem.text:
                     node.text.append(elem.text)
-                    ptag = elem.getparent().tag
-                    if ptag == 'body' or ptag == 'html':
-                        ptag = 'span'
-                    node.tags.append(ptag)
+                    if elem.tag == 'span':
+                        ptag = elem.getparent().tag
+                        if ptag == 'body' or ptag == 'html':
+                            ptag = elem.tag
+                        node.tags.append(ptag)
+                    else:
+                        node.tags.append(elem.tag)
 
                 for child in children:
                     self._create_node(node, child)
