@@ -21,6 +21,9 @@ name = "tencent-pypi"
 url = "http://mirrors.cloud.tencent.com/pypi/simple/"
 priority = "primary"
 
+[tool.poetry.scripts]
+yuquedd = "cli:cli_execute"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
