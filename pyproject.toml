@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yuquedd"
-version = "1.0.0"
+version = "1.0.1"
 description = "Tool for converting yuque.com knowledge base documents to markdown documents."
 authors = ["gupingan <g332920287@foxmail.com>"]
 readme = "README.md"
@@ -22,7 +22,7 @@ url = "http://mirrors.cloud.tencent.com/pypi/simple/"
 priority = "primary"
 
 [tool.poetry.scripts]
-yuquedd = "cli:cli_execute"
+yuquedd = "yuquedd.cli:cli_execute"
 
 [build-system]
 requires = ["poetry-core"]
