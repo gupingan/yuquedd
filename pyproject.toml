@@ -10,10 +10,11 @@ documentation = 'https://github.com/gupingan/yuquedd'
 repository = 'https://github.com/gupingan/yuquedd'
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.8"
 requests = "^2.32.3"
 click = "^8.1.7"
 lxml = "^5.2.2"
+lakedoc = "^1.0.1"
 
 [[tool.poetry.source]]
 name = "tencent-pypi"

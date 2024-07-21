@@ -5,7 +5,7 @@
 仅供技术研究使用，请勿商用或者非法用途，如有影响贵司或组织的权益，请联系我删除
 """
 from .cli import execute
-from .service import create_book, get_content, html2markdown
+from .service import create_book, get_content
 
-__all__ = ['execute', 'create_book', 'get_content', 'html2markdown']
+__all__ = ['execute', 'create_book', 'get_content']
 
