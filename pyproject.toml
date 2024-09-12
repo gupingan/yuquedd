@@ -14,7 +14,7 @@ python = ">=3.8"
 requests = "^2.32.3"
 click = "^8.1.7"
 lxml = "^5.2.2"
-lakedoc = "^1.0.3"
+lakedoc = "^1.0.4"
 
 [[tool.poetry.source]]
 name = "tencent-pypi"
