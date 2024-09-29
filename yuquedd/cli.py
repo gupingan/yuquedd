@@ -9,15 +9,15 @@ from . import const, service
 @click.argument('url', default='')
 @click.option('--path', 'path', '-p', default='./', help='指定 md 文档保存的路径')
 @click.option('--savesource', 'savesource', '-s', is_flag=True, help='是否保存源 HTML 内容')
-@click.option('--cookies', 'cookies', '-c', default='', help='携带 cookies 访问')
+@click.option('--cookie', 'cookie', '-c', default='', help='携带 cookie 访问')
 @click.option('--proxies', 'proxies', '-p', default='', help='指定代理："http=proxy1,https=proxy2"')
 @click.option('--encoding', 'encoding', '-e', default='utf-8', help='指定保存文件的编码')
-def cli_execute(url, path, savesource, cookies, proxies, encoding):
+def cli_execute(url, path, savesource, cookie, proxies, encoding):
     if not url or not const.url_pattern.match(url):
         print(string.color_string('Error：语雀文档地址不正确，参考：https://www.yuque.com/.../.../...', 'red'))
         return None
 
-    service.set_options(cookies, proxies)
+    service.set_options(cookie, proxies)
 
     book = service.create_book(url)
     if not book:
@@ -35,14 +35,14 @@ def cli_execute(url, path, savesource, cookies, proxies, encoding):
     print(string.color_string(f'> 文档已保存，路径为：{str(save_path.absolute().resolve())}\n', 'green'))
 
 
-def execute(url: str, path='./', savesource=False, cookies='', proxies='', encoding='utf-8', nohint=False):
+def execute(url: str, path='./', savesource=False, cookie='', proxies='', encoding='utf-8', nohint=False):
     """
     执行主要功能的 Python 方法
 
     :param url: 要访问的 URL
     :param path: 保存路径
     :param savesource: 是否保存源 HTML 内容
-    :param cookies: 携带的 cookies
+    :param cookie: 携带的 cookies
     :param proxies: 指定的代理
     :param encoding: 保存文件的编码
     :param nohint: 是否打印提示
@@ -52,8 +52,8 @@ def execute(url: str, path='./', savesource=False, cookies='', proxies='', encod
         args.extend(['--path', path])
     if savesource:
         args.append('--savesource')
-    if cookies:
-        args.extend(['--cookies', cookies])
+    if cookie:
+        args.extend(['--cookie', cookie])
     if proxies:
         args.extend(['--proxies', proxies])
     if encoding:

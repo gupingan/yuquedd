@@ -25,9 +25,9 @@ class Book(object):
 """
 
 
-def set_options(cookies, proxies):
-    if cookies:
-        const.headers['Cookies'] = cookies
+def set_options(cookie, proxies):
+    if cookie:
+        const.headers['Cookie'] = cookie
 
     if proxies:
         try:
