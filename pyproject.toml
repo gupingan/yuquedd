@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yuquedd"
-version = "1.0.3"
+version = "1.0.4"
 description = "Tool for converting yuque.com knowledge base documents to markdown documents."
 authors = ["gupingan <g332920287@foxmail.com>"]
 readme = "README.md"
@@ -15,10 +15,16 @@ requests = "^2.32.3"
 click = "^8.1.7"
 lxml = "^5.2.2"
 lakedoc = "^1.0.4"
+typing-extensions = "3.10.0.2"
+urllib3 = "2.2.0"
 
 [[tool.poetry.source]]
-name = "tencent-pypi"
-url = "http://mirrors.cloud.tencent.com/pypi/simple/"
+name = "tsinghua-pypi"
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "PyPI"
 priority = "primary"
 
 [tool.poetry.scripts]
